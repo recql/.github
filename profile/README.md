@@ -1,6 +1,6 @@
 ## Replace your entire recommendation pipeline with one query.
 
-RecQL is a database-agnostic query language for recommendations, personalization, and ranked retrieval. It gives you one way to express candidate retrieval, filtering, scoring, ranking, and reordering, without wiring your application logic to a specific database or search engine. It also allows you to mix-and-match data across systems.
+RecQL is a database-agnostic query language for recommendations, personalization, and ranked retrieval. It gives you one way to express candidate retrieval, filtering, scoring, ranking, and reordering, without wiring your application logic to a specific database or search engine. It even allows you to mix-and-match data across systems.
 
 ```sql
 SELECT score(expression='0.6 * click_rate + 0.4 * similarity') AS s,
