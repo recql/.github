@@ -1,8 +1,6 @@
-# RecQL
+## Write recommendation logic once. Run it where your data already lives.
 
-**Write recommendation logic once. Run it where the data already lives.**
-
-RecQL is a database-agnostic query language for recommendations, personalization, and ranked retrieval. It gives you one way to express candidate retrieval, filtering, scoring, ranking, and reordering, without wiring your application logic to a specific database or search engine.
+RecQL is a database-agnostic query language for recommendations, personalization, and ranked retrieval. It gives you one way to express candidate retrieval, filtering, scoring, ranking, and reordering, without wiring your application logic to a specific database or search engine. It also allows you to mix-and-match data across systems.
 
 ```sql
 SELECT score(expression='0.6 * click_rate + 0.4 * similarity') AS s,
@@ -29,11 +27,11 @@ Each one exposes search and ranking differently:
 * Vector similarity and approximate nearest neighbor (ANN) search
 * Database-specific scoring and ranking functions
 
-So teams end up rebuilding the same retrieval pipeline by hand for every backend they touch - hundreds of lines of glue code to express what is, at heart, a single query.
+So teams end up rebuilding the same retrieval pipeline by hand for every backend they touch - hundreds of lines of glue code and logic to express what is, at heart, a single query.
 
 ## How RecQL Solves It
 
-RecQL defines a portable retrieval and ranking model that compiles to the native full-text and vector search capabilities of each database.
+RecQL defines a portable retrieval and ranking model that compiles to the native full-text and vector search capabilities of your database.
 
 A single RecQL query expresses a full four-stage recommendation pipeline:
 
