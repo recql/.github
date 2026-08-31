@@ -3,11 +3,12 @@
 RecQL is a database-agnostic query language for recommendations, personalization, and ranked retrieval. It gives you one way to express candidate retrieval, filtering, scoring, ranking, and reordering, without wiring your application logic to a specific database or search engine. It even allows you to mix-and-match data across systems.
 
 ```sql
-SELECT score(expression='0.6 * click_rate + 0.4 * similarity') AS s,
+SELECT score(expression='0.5 * retrieval.get_score("semantic", 0) + 0.3 * retrieval.get_score("lexical", 0) + 0.2 * retrieval.get_score("user_taste", 0)') AS s,
        diversity(score=s, strength=0.3) AS ranked, *
 FROM retrieve(
-  similarity(embedding_ref='als', limit=100),
-  text_search(query='$query', mode='lexical', limit=100)
+  text_search(query=$query, mode='vector', text_embedding_ref='content_embedding', limit=100, name='semantic'),
+  text_search(query=$query, mode='lexical', limit=100, name='lexical'),
+  similarity(embedding_ref='als', encoder=precomputed_user(input_user_id=$user_id), limit=100, name='user_taste')
 )
 WHERE in_stock = true
 ORDER BY ranked
@@ -55,31 +56,35 @@ Every one of these is the same four-stage query - **retrieve → filter → scor
 **A personalized "For You" feed:**
 
 ```sql
-SELECT score(expression='click_rate', input_user_id='$user_id') AS s,
+SELECT score(model='click_through_rate', input_user_id=$user_id) AS s,
        diversity(score=s, strength=0.3) AS feed, *
-FROM retrieve(similarity(embedding_ref='als', encoder='interaction_pooling',
-                         input_user_id='$user_id', limit=200))
-ORDER BY feed LIMIT 20
+FROM retrieve(
+  similarity(embedding_ref='als', encoder=interaction_pooling(input_user_id=$user_id), limit=200)
+)
+ORDER BY feed
+LIMIT 20
 ```
 
 **Hybrid search (lexical + semantic, fused):**
 
 ```sql
-SELECT score(expression='0.5 * retrieval.semantic + 0.5 * retrieval.lexical') AS s, *
+SELECT score(expression='0.5 * retrieval.get_score("semantic", 0) + 0.5 * retrieval.get_score("lexical", 0)') AS s, *
 FROM retrieve(
-  text_search(query='$q', mode='vector',  limit=100, name='semantic'),
-  text_search(query='$q', mode='lexical', limit=100, name='lexical')
+  text_search(query=$query, mode='vector', text_embedding_ref='content_embedding', limit=100, name='semantic'),
+  text_search(query=$query, mode='lexical', limit=100, name='lexical')
 )
-ORDER BY s LIMIT 20
+ORDER BY s
+LIMIT 20
 ```
 
 **Reranking an external candidate set with diversity:**
 
 ```sql
-SELECT score(expression='click_rate', input_user_id='$user_id') AS s,
+SELECT score(model='click_through_rate', input_user_id=$user_id) AS s,
        diversity(score=s, strength=0.4) AS r, *
-FROM retrieve(ids($candidate_ids))
-ORDER BY r LIMIT 10
+FROM retrieve(candidate_ids($candidate_ids))
+ORDER BY r
+LIMIT 10
 ```
 
 Every example below runs live in the [playground](https://github.com/recql/recql-playground/tree/main/examples) against MovieLens.
